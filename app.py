@@ -29,8 +29,11 @@ with st.sidebar.form("add_bookmark"):
 if st.session_state.bookmarks:
     df = pd.DataFrame(st.session_state.bookmarks)
 else:
-    # 기본 서울 시청 위치 한 개 표시
-    df = pd.DataFrame([{"name": "서울 시청 (기본)", "lat": 37.5665, "lon": 126.9780}])
+    # 기본 서울 시청 위치 + 광주광역시 교육청 위치 두 개 표시
+    df = pd.DataFrame([
+        {"name": "서울 시청 (기본)", "lat": 37.5665, "lon": 126.9780},
+        {"name": "광주광역시 교육청 (기본)", "lat": 35.1595, "lon": 126.8519}
+    ])
 
 # 지도 표시
 st.map(df.rename(columns={"lat": "latitude", "lon": "longitude"}))
