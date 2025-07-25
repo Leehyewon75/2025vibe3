@@ -1,24 +1,55 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 
-st.title("행정구역별 총인구수 시각화")
+st.title("두 개 CSV 파일로 인구 피라미드 그리기")
 
-uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
-if uploaded_file:
-    # 인코딩 문제 있으면 바꿔보세요
-    df = pd.read_csv(uploaded_file, encoding='euc-kr')
-    
-    # 숫자 데이터는 쉼표 제거하고 정수로 변환
-    df['2025년06월_총인구수'] = df['2025년06월_총인구수'].str.replace(',', '').astype(int)
-    
-    fig = px.bar(df, 
-                 x='행정구역', 
-                 y='2025년06월_총인구수', 
-                 title='행정구역별 총인구수',
-                 labels={'2025년06월_총인구수': '총인구수', '행정구역': '행정구역'},
-                 template='plotly_white')
-    
-    fig.update_layout(xaxis_tickangle=-45)
-    
+uploaded_male = st.file_uploader("남성 인구 CSV 파일 업로드", type=["csv"])
+uploaded_female = st.file_uploader("여성 인구 CSV 파일 업로드", type=["csv"])
+
+if uploaded_male and uploaded_female:
+    # 인코딩은 데이터에 맞게 변경하세요
+    df_male = pd.read_csv(uploaded_male, encoding='euc-kr')
+    df_female = pd.read_csv(uploaded_female, encoding='euc-kr')
+
+    # 컬럼명은 업로드 파일에 맞게 수정하세요
+    # 예: 'Age' 컬럼, 'Population' 컬럼이 있다고 가정
+    # 아래는 예시로 컬럼명 변경 코드 넣음
+    df_male = df_male.rename(columns={'연령별(5세계급)': 'Age', '인구수': 'Population'})
+    df_female = df_female.rename(columns={'연령별(5세계급)': 'Age', '인구수': 'Population'})
+
+    # 남성 인구는 음수 처리
+    df_male['Population'] = -df_male['Population']
+
+    # 나이순 정렬 (같은 기준으로)
+    df_male = df_male.sort_values('Age')
+    df_female = df_female.sort_values('Age')
+
+    fig = go.Figure()
+
+    fig.add_trace(go.Bar(
+        y=df_male['Age'],
+        x=df_male['Population'],
+        name='남성',
+        orientation='h',
+        marker_color='blue'
+    ))
+
+    fig.add_trace(go.Bar(
+        y=df_female['Age'],
+        x=df_female['Population'],
+        name='여성',
+        orientation='h',
+        marker_color='red'
+    ))
+
+    fig.update_layout(
+        title='인구 피라미드 (남녀 인구 비교)',
+        barmode='overlay',
+        xaxis=dict(title='인구수', tickvals=[-500000, -250000, 0, 250000, 500000],
+                   ticktext=['500k', '250k', '0', '250k', '500k']),
+        yaxis=dict(title='연령'),
+        template='plotly_white'
+    )
+
     st.plotly_chart(fig, use_container_width=True)
