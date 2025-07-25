@@ -1,24 +1,32 @@
 import streamlit as st
 import pandas as pd
+import altair as alt
 
-st.title("CSV 업로드 및 인구수 시각화")
+# 데이터 불러오기 (예시)
+df = pd.read_csv("population_data.csv")
 
-uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
+# 1. 시도별 인구수 막대 차트
+st.header("시도별 총 인구수")
+pop_by_region = df.groupby("region")["total_population"].sum().reset_index()
 
-if uploaded_file:
-    df = pd.read_csv(uploaded_file, encoding='cp949')
-    st.write("컬럼명:", df.columns.tolist())
+bar_chart = alt.Chart(pop_by_region).mark_bar().encode(
+    x=alt.X('region', sort='-y'),
+    y='total_population',
+    tooltip=['region', 'total_population']
+).properties(width=700)
 
-    # 컬럼명 직접 지정 (컬럼명 리스트 확인 후 수정)
-    col_name = "2025년06월_계_총인구수"  # 예시, 실제 컬럼명에 맞게 변경
+st.altair_chart(bar_chart)
 
-    if col_name in df.columns:
-        # 쉼표 제거 후 숫자 변환
-        df[col_name] = df[col_name].str.replace(",", "").astype(int)
-        st.dataframe(df.head())
+# 2. 성별 인구 비율 파이 차트
+st.header("성별 인구 비율")
+gender_pop = df[["male_population", "female_population"]].sum().reset_index()
+gender_pop.columns = ["gender", "count"]
+gender_pop["gender"] = gender_pop["gender"].map({"male_population": "남성", "female_population": "여성"})
 
-        st.bar_chart(df.set_index("행정구역")[col_name])
-    else:
-        st.error(f"컬럼 '{col_name}' 이(가) 데이터에 없습니다.")
-else:
-    st.info("CSV 파일을 업로드 해주세요.")
+pie_chart = alt.Chart(gender_pop).mark_arc().encode(
+    theta='count',
+    color='gender',
+    tooltip=['gender', 'count']
+)
+
+st.altair_chart(pie_chart)
