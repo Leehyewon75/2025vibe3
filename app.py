@@ -5,7 +5,7 @@ import pandas as pd
 if "bookmarks" not in st.session_state:
     st.session_state.bookmarks = []
 
-st.title("📍 나만의 북마크 지도")
+st.title("🗺️나만의 북마크 지도")
 
 st.sidebar.header("➕ 장소 추가")
 
