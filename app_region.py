@@ -1,7 +1,7 @@
 import streamlit as st
 import pandas as pd
 
-st.title("행정구역별 인구수 선그래프 (설치 없이)")
+st.title("행정구역별 인구수 선그래프")
 
 uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
 
