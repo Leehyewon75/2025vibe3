@@ -1,18 +1,24 @@
 import streamlit as st
 import pandas as pd
+import plotly.express as px
 
-st.title("CSV 컬럼명과 데이터 확인")
+st.title("행정구역별 총인구수 시각화")
 
 uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
 if uploaded_file:
-    # 파일 인코딩이 euc-kr일 가능성이 높으니 기본은 euc-kr로, 안 맞으면 utf-8로 바꿔서 시도해보세요.
-    try:
-        df = pd.read_csv(uploaded_file, encoding='euc-kr')
-    except:
-        df = pd.read_csv(uploaded_file, encoding='utf-8')
+    # 인코딩 문제 있으면 바꿔보세요
+    df = pd.read_csv(uploaded_file, encoding='euc-kr')
     
-    st.write("컬럼명 리스트:")
-    st.write(df.columns.tolist())  # 컬럼명 리스트 출력
+    # 숫자 데이터는 쉼표 제거하고 정수로 변환
+    df['2025년06월_총인구수'] = df['2025년06월_총인구수'].str.replace(',', '').astype(int)
     
-    st.write("데이터 샘플:")
-    st.write(df.head())
+    fig = px.bar(df, 
+                 x='행정구역', 
+                 y='2025년06월_총인구수', 
+                 title='행정구역별 총인구수',
+                 labels={'2025년06월_총인구수': '총인구수', '행정구역': '행정구역'},
+                 template='plotly_white')
+    
+    fig.update_layout(xaxis_tickangle=-45)
+    
+    st.plotly_chart(fig, use_container_width=True)
