@@ -18,3 +18,17 @@ if uploaded_file:
 
 else:
     st.info("CSV 파일을 업로드 해주세요.")
+
+uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
+
+if uploaded_file:
+    df = pd.read_csv(uploaded_file, encoding='cp949')
+    st.write(df.columns.tolist())  # 여기서 컬럼명 확인
+
+    # 실제 컬럼명에 맞게 수정하세요!
+    col_name = "실제_인구수_컬럼명"
+
+    df[col_name] = df[col_name].str.replace(",", "").astype(int)
+
+    st.dataframe(df.head())
+    # ... 그래프 그리기 코드 계속
