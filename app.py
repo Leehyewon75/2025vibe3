@@ -8,7 +8,7 @@ if "bookmarks" not in st.session_state:
 st.title("🗺️나만의 북마크 지도")
 
 # 사이드바: 북마크 추가 폼
-st.sidebar.header("➕ 장소 추가")
+st.sidebar.header("➕장소 추가")
 with st.sidebar.form("add_bookmark"):
     name = st.text_input("장소 이름")
     lat = st.number_input("위도 (예: 37.5665)", format="%.6f")
@@ -32,7 +32,7 @@ if st.session_state.bookmarks:
 else:
     st.info("북마크가 없습니다. 장소를 추가해보세요!")
 
-st.subheader("📌 북마크 목록")
+st.subheader("📌북마크 목록")
 
 # 삭제 함수
 def delete_bookmark(idx):
