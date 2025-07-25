@@ -47,3 +47,23 @@ for i, b in enumerate(st.session_state.bookmarks):
         if st.button("삭제", key=f"delete_{i}"):
             delete_bookmark(i)
             st.experimental_rerun()
+
+# (목록 출력하는 부분 아래에 바로 추가)
+
+st.subheader("📌 북마크 목록")
+
+# 기존 북마크 목록 출력 코드 (그대로 유지)
+
+for i, b in enumerate(st.session_state.bookmarks):
+    col1, col2 = st.columns([8, 1])
+    with col1:
+        st.markdown(f"- **{b['name']}**: ({b['lat']}, {b['lon']})")
+    with col2:
+        if st.button("삭제", key=f"delete_{i}"):
+            del st.session_state.bookmarks[i]
+            st.experimental_rerun()
+
+# 여기부터 추가 부분
+if st.button("🗑️ 모든 북마크 삭제하기"):
+    st.session_state.bookmarks.clear()
+    st.experimental_rerun()
