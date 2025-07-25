@@ -1,55 +1,38 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
+import plotly.express as px
 
-st.title("두 개 CSV 파일로 인구 피라미드 그리기")
+st.title("CSV 컬럼명 확인 + 행정구역별 총인구수 그래프")
 
-uploaded_male = st.file_uploader("남성 인구 CSV 파일 업로드", type=["csv"])
-uploaded_female = st.file_uploader("여성 인구 CSV 파일 업로드", type=["csv"])
+uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
 
-if uploaded_male and uploaded_female:
-    # 인코딩은 데이터에 맞게 변경하세요
-    df_male = pd.read_csv(uploaded_male, encoding='euc-kr')
-    df_female = pd.read_csv(uploaded_female, encoding='euc-kr')
+if uploaded_file:
+    # 인코딩 문제 있으면 euc-kr, 안 맞으면 utf-8로 바꿔서 시도 가능
+    try:
+        df = pd.read_csv(uploaded_file, encoding='euc-kr')
+    except:
+        df = pd.read_csv(uploaded_file, encoding='utf-8')
 
-    # 컬럼명은 업로드 파일에 맞게 수정하세요
-    # 예: 'Age' 컬럼, 'Population' 컬럼이 있다고 가정
-    # 아래는 예시로 컬럼명 변경 코드 넣음
-    df_male = df_male.rename(columns={'연령별(5세계급)': 'Age', '인구수': 'Population'})
-    df_female = df_female.rename(columns={'연령별(5세계급)': 'Age', '인구수': 'Population'})
+    # 컬럼명 출력
+    st.write("컬럼명 리스트:")
+    st.write(df.columns.tolist())
 
-    # 남성 인구는 음수 처리
-    df_male['Population'] = -df_male['Population']
+    # 데이터 샘플 출력
+    st.write("데이터 샘플:")
+    st.write(df.head())
 
-    # 나이순 정렬 (같은 기준으로)
-    df_male = df_male.sort_values('Age')
-    df_female = df_female.sort_values('Age')
+    # 컬럼명에 맞게 숫자 데이터 정리 (아래는 예시, 상황에 맞게 수정하세요)
+    # 쉼표 제거 후 int 변환
+    pop_col = '2025년06월_총인구수'  # 예시: 총인구수 컬럼명
+    if pop_col in df.columns:
+        df[pop_col] = df[pop_col].str.replace(',', '').astype(int)
 
-    fig = go.Figure()
-
-    fig.add_trace(go.Bar(
-        y=df_male['Age'],
-        x=df_male['Population'],
-        name='남성',
-        orientation='h',
-        marker_color='blue'
-    ))
-
-    fig.add_trace(go.Bar(
-        y=df_female['Age'],
-        x=df_female['Population'],
-        name='여성',
-        orientation='h',
-        marker_color='red'
-    ))
-
-    fig.update_layout(
-        title='인구 피라미드 (남녀 인구 비교)',
-        barmode='overlay',
-        xaxis=dict(title='인구수', tickvals=[-500000, -250000, 0, 250000, 500000],
-                   ticktext=['500k', '250k', '0', '250k', '500k']),
-        yaxis=dict(title='연령'),
-        template='plotly_white'
-    )
-
-    st.plotly_chart(fig, use_container_width=True)
+        # 그래프 그리기
+        fig = px.bar(df, x='행정구역', y=pop_col, 
+                     title='행정구역별 총인구수',
+                     labels={pop_col: '총인구수', '행정구역': '행정구역'},
+                     template='plotly_white')
+        fig.update_layout(xaxis_tickangle=-45)
+        st.plotly_chart(fig, use_container_width=True)
+    else:
+        st.warning(f"'{pop_col}' 컬럼을 데이터에서 찾을 수 없습니다. 컬럼명을 확인하세요.")
