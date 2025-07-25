@@ -1,34 +1,24 @@
 import streamlit as st
 import pandas as pd
 
-st.title("행정구역별 인구수")
+st.title("CSV 업로드 및 인구수 시각화")
 
 uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file, encoding='cp949')
+    st.write("컬럼명:", df.columns.tolist())
 
-    # 쉼표 제거 후 숫자 변환
-    df["2025년06월_계_총인구수"] = df["2025년06월_계_총인구수"].str.replace(",", "").astype(int)
+    # 컬럼명 직접 지정 (컬럼명 리스트 확인 후 수정)
+    col_name = "2025년06월_계_총인구수"  # 예시, 실제 컬럼명에 맞게 변경
 
-    st.dataframe(df.head())
+    if col_name in df.columns:
+        # 쉼표 제거 후 숫자 변환
+        df[col_name] = df[col_name].str.replace(",", "").astype(int)
+        st.dataframe(df.head())
 
-    chart_data = df.set_index("행정구역")["2025년06월_계_총인구수"]
-    st.line_chart(chart_data)
-
+        st.bar_chart(df.set_index("행정구역")[col_name])
+    else:
+        st.error(f"컬럼 '{col_name}' 이(가) 데이터에 없습니다.")
 else:
     st.info("CSV 파일을 업로드 해주세요.")
-
-uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
-
-if uploaded_file:
-    df = pd.read_csv(uploaded_file, encoding='cp949')
-    st.write(df.columns.tolist())  # 여기서 컬럼명 확인
-
-    # 실제 컬럼명에 맞게 수정하세요!
-    col_name = "실제_인구수_컬럼명"
-
-    df[col_name] = df[col_name].str.replace(",", "").astype(int)
-
-    st.dataframe(df.head())
-    # ... 그래프 그리기 코드 계속
