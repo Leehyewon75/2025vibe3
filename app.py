@@ -5,10 +5,10 @@ import pandas as pd
 if "bookmarks" not in st.session_state:
     st.session_state.bookmarks = []
 
-st.title("🗺️ 나만의 북마크 지도")
+st.title("🗺️나만의 북마크 지도")
 
 # 사이드바: 장소 추가
-st.sidebar.header("➕ 장소 추가")
+st.sidebar.header("➕장소 추가")
 with st.sidebar.form("add_bookmark"):
     name = st.text_input("장소 이름")
     lat = st.number_input("위도 (예: 37.5665)", format="%.6f")
@@ -36,7 +36,7 @@ else:
 st.map(df.rename(columns={"lat": "latitude", "lon": "longitude"}))
 
 # 북마크 목록
-st.subheader("📌 북마크 목록")
+st.subheader("📌북마크 목록")
 if st.session_state.bookmarks:
     for b in st.session_state.bookmarks:
         st.markdown(f"- **{b['name']}**: ({b['lat']}, {b['lon']})")
