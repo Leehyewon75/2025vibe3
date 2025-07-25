@@ -1,33 +1,27 @@
 import streamlit as st
 import pandas as pd
-import plotly.graph_objects as go
 
-st.title("인구 피라미드 예제")
+st.title("간단 인구 피라미드 스타일 차트 (설치 없이)")
 
 uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file, encoding='cp949')
 
-    # 예시 컬럼명 (파일에 맞게 수정 필요)
-    age_groups = df["연령대"]  # 연령대
-    male = df["남자"].str.replace(",", "").astype(int) * -1  # 남자는 음수로
-    female = df["여자"].str.replace(",", "").astype(int)     # 여자는 양수로
+    # 컬럼명은 파일에 맞게 변경하세요
+    age_col = "연령대"
+    male_col = "남자"
+    female_col = "여자"
 
-    fig = go.Figure()
-    fig.add_trace(go.Bar(y=age_groups, x=male, name='남자', orientation='h'))
-    fig.add_trace(go.Bar(y=age_groups, x=female, name='여자', orientation='h'))
+    df[male_col] = df[male_col].str.replace(",", "").astype(int)
+    df[female_col] = df[female_col].str.replace(",", "").astype(int)
 
-    fig.update_layout(
-        barmode='overlay',
-        bargap=0.1,
-        xaxis=dict(title='인구수', tickvals=[-10000, 0, 10000],
-                   ticktext=['10,000', '0', '10,000']),
-        yaxis=dict(title='연령대'),
-        title='인구 피라미드',
-        template='plotly_white'
-    )
-    st.plotly_chart(fig)
+    # 두 개 차트를 나란히 표시
+    st.write("남자 인구수")
+    st.bar_chart(df.set_index(age_col)[male_col])
+
+    st.write("여자 인구수")
+    st.bar_chart(df.set_index(age_col)[female_col])
 
 else:
     st.info("CSV 파일을 업로드 해주세요.")
