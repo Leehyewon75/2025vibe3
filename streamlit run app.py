@@ -9,23 +9,19 @@ uploaded_file2 = st.file_uploader("성별 인구수 포함 CSV 업로드", type=
 
 if uploaded_file1 and uploaded_file2:
     # 인코딩은 데이터에 맞게 변경하세요
-    df_basic = pd.read_csv(uploaded_file1, encoding='euc-kr')
-    df_gender = pd.read_csv(uploaded_file2, encoding='euc-kr')
-    
-    # 남자/여자 인구 컬럼명 예시
-    male_col = '2025년06월_남자 인구수'
-    female_col = '2025년06월_여자 인구수'
-    region_col = '행정구역'
-    
-    # 숫자 데이터 쉼표 제거 후 정수 변환
-    df_gender[male_col] = df_gender[male_col].str.replace(',', '').astype(int)
-    df_gender[female_col] = df_gender[female_col].str.replace(',', '').astype(int)
-    
-    # 남성 인구는 음수 처리 (왼쪽에 표시하기 위해)
-    df_gender[male_col] = -df_gender[male_col]
-    
-    # 정렬(행정구역명 기준)
-    df_gender = df_gender.sort_values(region_col)
+   df_gender = pd.read_csv(uploaded_file2, encoding='euc-kr')
+df_gender.columns = df_gender.columns.str.strip()  # 공백 제거
+
+male_col = '2025년06월_남자 인구수'
+female_col = '2025년06월_여자 인구수'
+region_col = '행정구역'
+
+df_gender[male_col] = df_gender[male_col].str.replace(',', '').astype(int)
+df_gender[female_col] = df_gender[female_col].str.replace(',', '').astype(int)
+
+df_gender[male_col] = -df_gender[male_col]  # 음수 처리
+df_gender = df_gender.sort_values(region_col)
+
     
     fig = go.Figure()
     
