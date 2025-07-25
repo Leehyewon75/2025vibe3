@@ -4,27 +4,36 @@ import plotly.graph_objects as go
 
 st.title("행정구역별 남자/여자 인구수 비교 인구 피라미드")
 
+# 두 개 CSV 파일 업로드 UI
 uploaded_file1 = st.file_uploader("기본 인구정보 CSV 업로드", type=["csv"])
 uploaded_file2 = st.file_uploader("성별 인구수 포함 CSV 업로드", type=["csv"])
 
 if uploaded_file1 and uploaded_file2:
-    # 인코딩은 데이터에 맞게 변경하세요
-   df_gender = pd.read_csv(uploaded_file2, encoding='euc-kr')
-df_gender.columns = df_gender.columns.str.strip()  # 공백 제거
+    # CSV 파일 읽기 (인코딩 euc-kr, 필요하면 utf-8로 변경)
+    df_basic = pd.read_csv(uploaded_file1, encoding='euc-kr')
+    df_gender = pd.read_csv(uploaded_file2, encoding='euc-kr')
 
-male_col = '2025년06월_남자 인구수'
-female_col = '2025년06월_여자 인구수'
-region_col = '행정구역'
+    # 컬럼명 공백 제거
+    df_gender.columns = df_gender.columns.str.strip()
 
-df_gender[male_col] = df_gender[male_col].str.replace(',', '').astype(int)
-df_gender[female_col] = df_gender[female_col].str.replace(',', '').astype(int)
+    # 컬럼명 설정 (파일에 맞게 수정 가능)
+    male_col = '2025년06월_남자 인구수'
+    female_col = '2025년06월_여자 인구수'
+    region_col = '행정구역'
 
-df_gender[male_col] = -df_gender[male_col]  # 음수 처리
-df_gender = df_gender.sort_values(region_col)
+    # 숫자 데이터 쉼표 제거 후 int 변환
+    df_gender[male_col] = df_gender[male_col].str.replace(',', '').astype(int)
+    df_gender[female_col] = df_gender[female_col].str.replace(',', '').astype(int)
 
-    
+    # 남자 인구는 음수 처리 (좌측 표시 목적)
+    df_gender[male_col] = -df_gender[male_col]
+
+    # 행정구역명 기준으로 정렬
+    df_gender = df_gender.sort_values(region_col)
+
+    # 그래프 생성
     fig = go.Figure()
-    
+
     fig.add_trace(go.Bar(
         y=df_gender[region_col],
         x=df_gender[male_col],
@@ -32,7 +41,7 @@ df_gender = df_gender.sort_values(region_col)
         orientation='h',
         marker_color='blue'
     ))
-    
+
     fig.add_trace(go.Bar(
         y=df_gender[region_col],
         x=df_gender[female_col],
@@ -40,17 +49,21 @@ df_gender = df_gender.sort_values(region_col)
         orientation='h',
         marker_color='pink'
     ))
-    
+
     fig.update_layout(
         title='행정구역별 남자/여자 인구수 비교',
         barmode='overlay',
-        xaxis=dict(title='인구수', tickvals=[-5000000, -2500000, 0, 2500000, 5000000],
-                   ticktext=['5M', '2.5M', '0', '2.5M', '5M']),
+        xaxis=dict(
+            title='인구수',
+            tickvals=[-5000000, -2500000, 0, 2500000, 5000000],
+            ticktext=['5M', '2.5M', '0', '2.5M', '5M']
+        ),
         yaxis=dict(title='행정구역'),
         template='plotly_white',
         xaxis_range=[-6000000, 6000000]
     )
-    
+
     st.plotly_chart(fig, use_container_width=True)
+
 else:
-    st.info("두 개 CSV 파일 모두 업로드 해주세요.")
+    st.info("두 개의 CSV 파일을 모두 업로드 해주세요.")
