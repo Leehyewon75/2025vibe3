@@ -1,38 +1,55 @@
 import streamlit as st
 import pandas as pd
-import plotly.express as px
+import plotly.graph_objects as go
 
-st.title("CSV 컬럼명 확인 + 행정구역별 총인구수 그래프")
+st.title("두 개 CSV 파일 업로드 후 함께 그래프 그리기")
 
-uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
+uploaded_file1 = st.file_uploader("첫 번째 CSV 파일 업로드", type=["csv"])
+uploaded_file2 = st.file_uploader("두 번째 CSV 파일 업로드", type=["csv"])
 
-if uploaded_file:
-    # 인코딩 문제 있으면 euc-kr, 안 맞으면 utf-8로 바꿔서 시도 가능
-    try:
-        df = pd.read_csv(uploaded_file, encoding='euc-kr')
-    except:
-        df = pd.read_csv(uploaded_file, encoding='utf-8')
-
-    # 컬럼명 출력
-    st.write("컬럼명 리스트:")
-    st.write(df.columns.tolist())
-
-    # 데이터 샘플 출력
-    st.write("데이터 샘플:")
-    st.write(df.head())
-
-    # 컬럼명에 맞게 숫자 데이터 정리 (아래는 예시, 상황에 맞게 수정하세요)
-    # 쉼표 제거 후 int 변환
-    pop_col = '2025년06월_총인구수'  # 예시: 총인구수 컬럼명
-    if pop_col in df.columns:
-        df[pop_col] = df[pop_col].str.replace(',', '').astype(int)
-
-        # 그래프 그리기
-        fig = px.bar(df, x='행정구역', y=pop_col, 
-                     title='행정구역별 총인구수',
-                     labels={pop_col: '총인구수', '행정구역': '행정구역'},
-                     template='plotly_white')
-        fig.update_layout(xaxis_tickangle=-45)
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.warning(f"'{pop_col}' 컬럼을 데이터에서 찾을 수 없습니다. 컬럼명을 확인하세요.")
+if uploaded_file1 and uploaded_file2:
+    # 파일 읽기 (인코딩은 필요시 바꾸기)
+    df1 = pd.read_csv(uploaded_file1, encoding='euc-kr')
+    df2 = pd.read_csv(uploaded_file2, encoding='euc-kr')
+    
+    # 컬럼명 확인 및 필요시 rename (예시)
+    # 실제 컬럼명에 맞게 바꿔주세요
+    df1 = df1.rename(columns={'연령별(5세계급)': 'Age', '인구수': 'Population'})
+    df2 = df2.rename(columns={'연령별(5세계급)': 'Age', '인구수': 'Population'})
+    
+    # 남성 데이터는 음수 처리 (예: df1이 남성)
+    df1['Population'] = -df1['Population']
+    
+    # 나이순 정렬
+    df1 = df1.sort_values('Age')
+    df2 = df2.sort_values('Age')
+    
+    fig = go.Figure()
+    
+    fig.add_trace(go.Bar(
+        y=df1['Age'],
+        x=df1['Population'],
+        name='파일1 (남성 등)',
+        orientation='h',
+        marker_color='blue'
+    ))
+    
+    fig.add_trace(go.Bar(
+        y=df2['Age'],
+        x=df2['Population'],
+        name='파일2 (여성 등)',
+        orientation='h',
+        marker_color='red'
+    ))
+    
+    fig.update_layout(
+        title='두 개 CSV 파일 데이터 비교 그래프',
+        barmode='overlay',
+        xaxis=dict(title='인구수'),
+        yaxis=dict(title='연령'),
+        template='plotly_white'
+    )
+    
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.info("두 개의 CSV 파일을 모두 업로드 해주세요.")
