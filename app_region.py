@@ -1,24 +1,33 @@
 import streamlit as st
 import pandas as pd
+import plotly.graph_objects as go
 
-st.title("CSV 업로드 및 인구수 시각화")
+st.title("인구 피라미드 예제")
 
 uploaded_file = st.file_uploader("CSV 파일 업로드", type=["csv"])
 
 if uploaded_file:
     df = pd.read_csv(uploaded_file, encoding='cp949')
-    st.write("컬럼명:", df.columns.tolist())
 
-    # 컬럼명 직접 지정 (컬럼명 리스트 확인 후 수정)
-    col_name = "2025년06월_계_총인구수"  # 예시, 실제 컬럼명에 맞게 변경
+    # 예시 컬럼명 (파일에 맞게 수정 필요)
+    age_groups = df["연령대"]  # 연령대
+    male = df["남자"].str.replace(",", "").astype(int) * -1  # 남자는 음수로
+    female = df["여자"].str.replace(",", "").astype(int)     # 여자는 양수로
 
-    if col_name in df.columns:
-        # 쉼표 제거 후 숫자 변환
-        df[col_name] = df[col_name].str.replace(",", "").astype(int)
-        st.dataframe(df.head())
+    fig = go.Figure()
+    fig.add_trace(go.Bar(y=age_groups, x=male, name='남자', orientation='h'))
+    fig.add_trace(go.Bar(y=age_groups, x=female, name='여자', orientation='h'))
 
-        st.bar_chart(df.set_index("행정구역")[col_name])
-    else:
-        st.error(f"컬럼 '{col_name}' 이(가) 데이터에 없습니다.")
+    fig.update_layout(
+        barmode='overlay',
+        bargap=0.1,
+        xaxis=dict(title='인구수', tickvals=[-10000, 0, 10000],
+                   ticktext=['10,000', '0', '10,000']),
+        yaxis=dict(title='연령대'),
+        title='인구 피라미드',
+        template='plotly_white'
+    )
+    st.plotly_chart(fig)
+
 else:
     st.info("CSV 파일을 업로드 해주세요.")
